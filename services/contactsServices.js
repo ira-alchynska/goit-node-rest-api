@@ -1,14 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-const contactsPath = path.resolve(__dirname, "db", "contacts.json");
+const contactsPath = path.resolve("db", "contacts.json");
 
 async function listContacts() {
     const data = await fs.readFile(contactsPath, "utf8");
