@@ -1,9 +1,10 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import "dotenv/config";
 
 import contactsRouter from "./routes/contactsRouter.js";
-
+import "./db/sequelize.js";
 const app = express();
 
 app.use(morgan("tiny"));
