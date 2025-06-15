@@ -26,11 +26,13 @@ async function getContact(req, res, next) {
 async function deleteContact(req, res, next) {
     try {
         const { id } = req.params;
-        const deleted = await Contact.destroy({ where: { id } });
-        if (!deleted) {
+        const contactToDelete = await Contact.findByPk(id);
+        if (!contactToDelete) {
             throw HttpError(404, "Not found");
         }
-        res.status(200).json({ message: "Contact deleted" });
+
+        await Contact.destroy({ where: { id } });
+        res.status(200).json(contactToDelete);
     } catch (error) {
         next(error);
     }
