@@ -31,13 +31,40 @@ const Contact = sequelize.define(
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    owner: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 });
+
+const User = sequelize.define(
+    'user', {
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    subscription: {
+        type: DataTypes.ENUM,
+        values: ["starter", "pro", "business"],
+        defaultValue: "starter",
+    },
+    token: {
+        type: DataTypes.STRING,
+        defaultValue: null,
+    },
+}
+);
 
 const connectDB = async () => {
     try {
         await sequelize.authenticate();
         console.log('Database connection successful');
-        // await sequelize.sync();
+        // await sequelize.sync({ alter: true });
     } catch (error) {
         console.error('Unable to connect to the database:', error.message);
         process.exit(1);
@@ -46,4 +73,4 @@ const connectDB = async () => {
 
 connectDB();
 
-export { sequelize, Contact };
+export { sequelize, Contact, User };
