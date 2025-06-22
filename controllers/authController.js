@@ -2,24 +2,22 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../db/sequelize.js';
 import HttpError from '../helpers/HttpError.js';
+import { Contact } from '../db/sequelize.js';
+import { signToken } from '../helpers/jwt.js';
 
 export const register = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        // Check if email is already in use
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             throw HttpError(409, 'Email in use');
         }
 
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create the user
         const newUser = await User.create({ email, password: hashedPassword });
 
-        // Respond with the created user
         res.status(201).json({
             user: {
                 email: newUser.email,
@@ -35,29 +33,28 @@ export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        // Find user by email
         const user = await User.findOne({ where: { email } });
         if (!user) {
             throw HttpError(401, 'Email or password is wrong');
         }
 
-        // Compare passwords
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             throw HttpError(401, 'Email or password is wrong');
         }
 
-        // Generate token
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = signToken({ id: user.id });
         user.token = token;
         await user.save();
 
-        // Respond with token and user info
+        const contacts = await Contact.findAll({ where: { owner: user.id } });
+
         res.status(200).json({
             token,
             user: {
                 email: user.email,
                 subscription: user.subscription,
+                contacts,
             },
         });
     } catch (error) {
@@ -88,9 +85,12 @@ export const currentUser = async (req, res, next) => {
             throw HttpError(401, 'Not authorized');
         }
 
+        const contacts = await Contact.findAll({ where: { owner: user.id } });
+
         res.status(200).json({
             email: user.email,
             subscription: user.subscription,
+            contacts,
         });
     } catch (error) {
         next(error);
