@@ -33,3 +33,13 @@ export async function updateUserToken(userId, token) {
     await user.save();
     return user;
 }
+
+export async function updateUserAvatar(userId, avatarURL) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+        throw new HttpError(401, 'Not authorized');
+    }
+    user.avatarURL = avatarURL;
+    await user.save();
+    return user;
+}

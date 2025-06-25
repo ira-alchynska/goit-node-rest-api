@@ -35,6 +35,7 @@ const Contact = sequelize.define(
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+
 });
 
 const User = sequelize.define(
@@ -57,6 +58,7 @@ const User = sequelize.define(
         type: DataTypes.STRING,
         defaultValue: null,
     },
+    avatarURL: DataTypes.STRING,
 }
 );
 
@@ -64,7 +66,7 @@ const connectDB = async () => {
     try {
         await sequelize.authenticate();
         console.log('Database connection successful');
-        // await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: true });
     } catch (error) {
         console.error('Unable to connect to the database:', error.message);
         process.exit(1);
