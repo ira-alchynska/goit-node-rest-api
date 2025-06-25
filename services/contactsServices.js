@@ -1,45 +1,49 @@
-import fs from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
+import { Contact } from '../db/sequelize.js';
+import HttpError from '../helpers/HttpError.js';
 
-
-const contactsPath = path.resolve("db", "contacts.json");
-
-async function listContacts() {
-    const data = await fs.readFile(contactsPath, "utf8");
-    return JSON.parse(data);
+export async function getAllContactsService(ownerId) {
+    return await Contact.findAll({ where: { owner: ownerId } });
 }
 
-async function getContactById(contactId) {
-    const contacts = await listContacts();
-    return contacts.find((c) => c.id === contactId) || null;
+export async function getContactByIdService(id) {
+    const contact = await Contact.findByPk(id);
+    if (!contact) {
+        throw HttpError(404, 'Not found');
+    }
+    return contact;
 }
 
-async function removeContact(contactId) {
-    const contacts = await listContacts();
-    const idx = contacts.findIndex((c) => c.id === contactId);
-    if (idx === -1) return null;
-    const [removed] = contacts.splice(idx, 1);
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return removed;
+export async function deleteContactService(id) {
+    const contactToDelete = await Contact.findByPk(id);
+    if (!contactToDelete) {
+        throw HttpError(404, 'Not found');
+    }
+    await Contact.destroy({ where: { id } });
+    return contactToDelete;
 }
 
-async function addContact(name, email, phone) {
-    const contacts = await listContacts();
-    const newContact = { id: randomUUID(), name, email, phone };
-    contacts.push(newContact);
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return newContact;
+export async function createContactService(contactData) {
+    return await Contact.create(contactData);
 }
 
-async function updateContact(contactId, updates) {
-    const contacts = await listContacts();
-    const idx = contacts.findIndex((c) => c.id === contactId);
-    if (idx === -1) return null;
-
-    contacts[idx] = { ...contacts[idx], ...updates };
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return contacts[idx];
+export async function updateContactByIdService(id, updates) {
+    if (Object.keys(updates).length === 0) {
+        throw HttpError(400, 'Body must have at least one field');
+    }
+    const [updated] = await Contact.update(updates, { where: { id } });
+    if (!updated) {
+        throw HttpError(404, 'Not found');
+    }
+    return await Contact.findByPk(id);
 }
 
-export { listContacts, getContactById, removeContact, addContact, updateContact };
+export async function updateStatusContactService(id, favorite) {
+    if (typeof favorite !== 'boolean') {
+        throw HttpError(400, 'Missing field favorite or invalid value');
+    }
+    const [updated] = await Contact.update({ favorite }, { where: { id } });
+    if (!updated) {
+        throw HttpError(404, 'Not found');
+    }
+    return await Contact.findByPk(id);
+}

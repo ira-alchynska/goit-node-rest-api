@@ -1,9 +1,16 @@
-import { Contact } from "../db/sequelize.js";
+import {
+    getAllContactsService,
+    getContactByIdService,
+    deleteContactService,
+    createContactService,
+    updateContactByIdService,
+    updateStatusContactService,
+} from '../services/contactsServices.js';
 import HttpError from "../helpers/HttpError.js";
 
 async function getAllContacts(req, res, next) {
     try {
-        const contacts = await Contact.findAll();
+        const contacts = await getAllContactsService(req.user.id);
         res.status(200).json(contacts);
     } catch (error) {
         next(error);
@@ -13,7 +20,7 @@ async function getAllContacts(req, res, next) {
 async function getContact(req, res, next) {
     try {
         const { id } = req.params;
-        const contact = await Contact.findByPk(id);
+        const contact = await getContactByIdService(id);
         if (!contact) {
             throw HttpError(404, "Not found");
         }
@@ -26,12 +33,11 @@ async function getContact(req, res, next) {
 async function deleteContact(req, res, next) {
     try {
         const { id } = req.params;
-        const contactToDelete = await Contact.findByPk(id);
+        const contactToDelete = await deleteContactService(id);
         if (!contactToDelete) {
             throw HttpError(404, "Not found");
         }
 
-        await Contact.destroy({ where: { id } });
         res.status(200).json(contactToDelete);
     } catch (error) {
         next(error);
@@ -41,7 +47,7 @@ async function deleteContact(req, res, next) {
 async function createContact(req, res, next) {
     try {
         const { name, email, phone, favorite } = req.body;
-        const newContact = await Contact.create({ name, email, phone, favorite });
+        const newContact = await createContactService({ name, email, phone, favorite, owner: req.user.id });
         res.status(201).json(newContact);
     } catch (error) {
         next(error);
@@ -57,12 +63,11 @@ async function updateContactById(req, res, next) {
             throw HttpError(400, "Body must have at least one field");
         }
 
-        const [updated] = await Contact.update(updates, { where: { id } });
-        if (!updated) {
+        const updatedContact = await updateContactByIdService(id, updates);
+        if (!updatedContact) {
             throw HttpError(404, "Not found");
         }
 
-        const updatedContact = await Contact.findByPk(id);
         res.status(200).json(updatedContact);
     } catch (error) {
         next(error);
@@ -78,12 +83,10 @@ async function updateStatusContact(req, res, next) {
             throw HttpError(400, "Missing field favorite or invalid value");
         }
 
-        const [updated] = await Contact.update({ favorite }, { where: { id } });
-        if (!updated) {
+        const updatedContact = await updateStatusContactService(id, favorite);
+        if (!updatedContact) {
             throw HttpError(404, "Not found");
         }
-
-        const updatedContact = await Contact.findByPk(id);
 
         res.status(200).json(updatedContact);
     } catch (error) {
