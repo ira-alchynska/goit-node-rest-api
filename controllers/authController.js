@@ -44,11 +44,13 @@ export const login = async (req, res, next) => {
 
         const user = await findUserByEmail(email);
         if (!user) {
+            console.error(`Login failed: User with email ${email} not found.`);
             throw new HttpError(401, 'Email or password is wrong');
         }
 
         const isPasswordValid = await validatePassword(password, user.password);
         if (!isPasswordValid) {
+            console.error(`Login failed: Password mismatch for email ${email}.`);
             throw new HttpError(401, 'Email or password is wrong');
         }
 
@@ -86,6 +88,7 @@ export const currentUser = async (req, res, next) => {
         res.status(200).json({
             email: user.email,
             subscription: user.subscription,
+            avatarURL: user.avatarURL,
         });
     } catch (error) {
         next(error);
