@@ -35,6 +35,7 @@ const Contact = sequelize.define(
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+
 });
 
 const User = sequelize.define(
@@ -57,6 +58,7 @@ const User = sequelize.define(
         type: DataTypes.STRING,
         defaultValue: null,
     },
+    avatarURL: DataTypes.STRING,
 }
 );
 

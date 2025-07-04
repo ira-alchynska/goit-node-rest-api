@@ -9,7 +9,7 @@ import {
 } from "../controllers/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import { createContactSchema, updateContactSchema, updateFavoriteSchema } from "../schemas/contactsSchemas.js";
-import authMiddleware from '../helpers/authMiddleware.js';
+import authMiddleware from '../middlewares/authMiddleware.js';
 
 const contactsRouter = express.Router();
 
