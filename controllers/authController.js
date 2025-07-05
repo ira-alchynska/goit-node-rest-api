@@ -7,10 +7,14 @@ import {
     findUserById,
     updateUserToken,
     updateUserAvatar,
+    findUserByVerificationToken,
 } from '../services/authServices.js';
 import gravatar from 'gravatar';
 import fs from 'fs/promises';
 import path from 'path';
+import sendEmail from '../helpers/sendEmail.js';
+import "dotenv/config";
+import { v4 as uuidv4 } from 'uuid';
 
 const avatarsDir = path.join(process.cwd(), 'public', 'avatars');
 
@@ -24,7 +28,24 @@ export const register = async (req, res, next) => {
         }
 
         const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
-        const newUser = await createUser(email, password, avatarURL);
+        const verificationToken = uuidv4();
+        const newUser = await createUser(email, password, avatarURL, verificationToken);
+
+        const verificationLink = `${req.protocol}://${req.get('host')}/auth/verify/${verificationToken}`;
+        const emailOptions = {
+            to: "alchynskairyna@gmail.com",
+            subject: 'Email Verification',
+            html: `<p>Please verify your email by clicking on the following link:</p>
+                  <a href="${verificationLink}">${verificationLink}</a>`,
+        };
+
+        try {
+            await sendEmail(emailOptions);
+            console.log('Email sent successfully');
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw new HttpError(500, 'Failed to send verification email');
+        }
 
         res.status(201).json({
             user: {
@@ -32,6 +53,7 @@ export const register = async (req, res, next) => {
                 subscription: newUser.subscription,
             },
             avatarURL: newUser.avatarURL,
+            message: 'Verification email sent',
         });
     } catch (error) {
         next(error);
@@ -109,6 +131,25 @@ export const updateAvatar = async (req, res, next) => {
         await updateUserAvatar(userId, avatarURL);
 
         res.status(200).json({ avatarURL });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifyEmail = async (req, res, next) => {
+    try {
+        const { verificationToken } = req.params;
+        const user = await findUserByVerificationToken(verificationToken);
+
+        if (!user) {
+            throw new HttpError(404, 'User not found');
+        }
+
+        user.verificationToken = null;
+        user.verify = true;
+        await user.save();
+
+        res.status(200).json({ message: 'Verification successful' });
     } catch (error) {
         next(error);
     }

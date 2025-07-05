@@ -62,3 +62,7 @@ export async function updateUserAvatar(userId, avatarURL) {
     await user.save();
     return user;
 }
+
+export async function findUserByVerificationToken(verificationToken) {
+    return await User.findOne({ where: { verificationToken } });
+}
