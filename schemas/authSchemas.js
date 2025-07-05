@@ -31,3 +31,15 @@ export const loginSchema = Joi.object({
         "any.required": "Password is required",
     }),
 });
+
+export const emailSchema = Joi.object({
+    email: Joi.string()
+        .pattern(emailRegex)
+        .email()
+        .required()
+        .messages({
+            "string.pattern.base": "Email must be a valid email address",
+            "string.email": "Invalid email format",
+            "any.required": "missing required field email",
+        }),
+});

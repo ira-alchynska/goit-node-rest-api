@@ -2,36 +2,13 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import "dotenv/config";
-import nodemailer from "nodemailer";
+
 import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/authRouter.js";
 import "./db/sequelize.js";
 const app = express();
 
-// const { UKR_NET_EMAIL, UKR_NET_PASSWORD } = process.env;
 
-// const nodemailerCnfig = nodemailer.createTransport({
-//   host: "smtp.ukr_net",
-//   port: 465,
-//   secure: false,
-//   auth: {
-//     user: UKR_NET_EMAIL,
-//     pass: UKR_NET_PASSWORD,
-//   },
-// });
-
-// const transport = nodemailer.createTransport(nodemailerCnfig)
-
-// const email = {
-//   from: UKR_NET_EMAIL,
-//   to: "alchynskairyna@gmail.com",
-//   subject: 'Email Verification',
-//   text: `Please verify your email by clicking on the following link: `,
-//   html: `<p>Please verify your email by clicking on the following link:</p> `,
-// }
-// transport.sendMail(email)
-//   .then(msg => console.log("Email sent successfully:", msg))
-//   .catch(err => console.error("Error sending email:", err));
 
 app.use(morgan("tiny"));
 app.use(cors());

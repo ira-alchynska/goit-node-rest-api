@@ -15,6 +15,8 @@ import path from 'path';
 import sendEmail from '../helpers/sendEmail.js';
 import "dotenv/config";
 import { v4 as uuidv4 } from 'uuid';
+import "dotenv/config";
+const { BASE_URL } = process.env;
 
 const avatarsDir = path.join(process.cwd(), 'public', 'avatars');
 
@@ -31,7 +33,7 @@ export const register = async (req, res, next) => {
         const verificationToken = uuidv4();
         const newUser = await createUser(email, password, avatarURL, verificationToken);
 
-        const verificationLink = `${req.protocol}://${req.get('host')}/auth/verify/${verificationToken}`;
+        const verificationLink = `${BASE_URL}/api/auth/verify/${verificationToken}`;
         const emailOptions = {
             to: "alchynskairyna@gmail.com",
             subject: 'Email Verification',
