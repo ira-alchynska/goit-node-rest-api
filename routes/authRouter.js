@@ -5,6 +5,7 @@ import { registerSchema, loginSchema, emailSchema } from '../schemas/authSchemas
 import authMiddleware from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/upload.js';
 import "dotenv/config";
+import { findUserByEmail } from '../services/authServices.js';
 const { BASE_URL, UKR_NET_EMAIL } = process.env;
 
 
@@ -41,15 +42,20 @@ router.post(
             }
 
 
+            if (!user.verificationToken) {
+                user.verificationToken = uuidv4();
+                await user.save();
+            }
+
             const verificationLink = `${BASE_URL}/api/auth/verify/${user.verificationToken}`;
-
-
             await sendEmail({
                 from: UKR_NET_EMAIL,
                 to: email,
                 subject: 'Email Verification',
-                html: `<p>Please verify your email by clicking on the following link:</p>
-                 <a href="${verificationLink}">${verificationLink}</a>`,
+                html: `
+            <p>Please verify your email by clicking on the following link:</p>
+            <a href="${verificationLink}">${verificationLink}</a>
+          `,
             });
 
             res.status(200).json({ message: 'Verification email sent' });
