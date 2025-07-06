@@ -8,6 +8,8 @@ import authRouter from "./routes/authRouter.js";
 import "./db/sequelize.js";
 const app = express();
 
+
+
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());

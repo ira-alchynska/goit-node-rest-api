@@ -10,17 +10,16 @@ export async function findUserByEmail(email) {
     return await User.findOne({ where: { email } });
 }
 
-export async function createUser(email, password) {
+export async function createUser(email, password, avatarURL, verificationToken) {
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log(`Hashed password for email ${email}: ${hashedPassword}`);
 
     const avatarFilename = `${uuidv4()}.jpg`;
-    const avatarURL = path.join('/avatars', avatarFilename);
+    const newAvatarPath = path.join(process.cwd(), 'public', 'avatars', avatarFilename);
 
     try {
-
         const defaultAvatarPath = path.join(process.cwd(), 'public', 'avatars', 'default.jpg');
-        const newAvatarPath = path.join(process.cwd(), 'public', 'avatars', avatarFilename);
+
         await fs.copyFile(defaultAvatarPath, newAvatarPath);
         console.log(`Default avatar copied to: ${newAvatarPath}`);
     } catch (error) {
@@ -28,7 +27,7 @@ export async function createUser(email, password) {
         throw new HttpError(500, 'Failed to create default avatar');
     }
 
-    return await User.create({ email, password: hashedPassword, avatarURL });
+    return await User.create({ email, password: hashedPassword, avatarURL: `/avatars/${avatarFilename}`, verificationToken });
 }
 
 export async function validatePassword(inputPassword, storedPassword) {
@@ -61,4 +60,8 @@ export async function updateUserAvatar(userId, avatarURL) {
     user.avatarURL = avatarURL;
     await user.save();
     return user;
+}
+
+export async function findUserByVerificationToken(verificationToken) {
+    return await User.findOne({ where: { verificationToken } });
 }
